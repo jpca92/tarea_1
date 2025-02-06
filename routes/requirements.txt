@@ -1,0 +1,11 @@
+flask
+flask_sqlalchemy
+psycopg2-binary
+flask_cors
+bcrypt
+uuid
+python-dotenv
+requests 
+gunicorn  
+pytest  
+pytest-flask  

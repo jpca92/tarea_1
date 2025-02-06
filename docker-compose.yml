@@ -1,0 +1,87 @@
+services:
+  users:
+    build: ./users
+    # container_name
+    image: users_service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - users_db
+    env_file:
+      - users/env.development
+    networks:
+      - app_net
+      - users_net
+  users_db:
+    container_name: user_db
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=users
+    ports:
+      - "3000:5432"
+    networks:
+      - users_net
+  posts:
+    build: ./posts
+    image: posts_service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - posts_db
+    env_file:
+      - posts/env.development
+    networks:
+      - app_net
+      - posts_net
+    volumes:
+      - ./posts/src:/app  # Mounts a volume to persist data inside the container
+  posts_db:
+    build: ./database/posts_db
+    container_name: posts_db
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=posts
+    ports:
+      - "5433:5433"
+    networks:
+      - posts_net
+  routes:
+    build: ./routes
+    container_name: routes_service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - routes_db
+    env_file:
+      - routes/env.development
+    networks:
+      - app_net
+      - routes_net
+  routes_db:
+    build: ./database/routes_db
+    container_name: routes_db
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=routes
+    ports:
+      - "5434:5432"
+    networks:
+      - routes_net
+
+networks:
+#porque son tipo bridge con cada una
+  app_net:
+    driver: bridge
+  users_net:
+    driver: bridge
+  posts_net:
+    driver: bridge
+  routes_net:
+    driver: bridge

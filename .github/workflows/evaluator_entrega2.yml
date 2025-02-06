@@ -1,0 +1,31 @@
+name: Evaluator_Entrega2
+on: workflow_dispatch
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+          registry-url: https://registry.npmjs.org/
+      - name: Set up yq
+        uses: mikefarah/yq@v4.30.8
+      - name: Save port to env variable
+        run: echo "INGRESS_PATH=$(yq '.url' config.yaml)" >> $GITHUB_ENV
+      - name: Download entrega1 postman collection
+        uses: wei/curl@master
+        with:
+          args: https://raw.githubusercontent.com/MISW-4301-Desarrollo-Apps-en-la-Nube/proyecto-monitor/main/entrega2/entrega2_verify_entrega1_still_works.json --output entrega2_verify_entrega1_still_works.json
+      - name: Download entrega2 postman collection
+        uses: wei/curl@master
+        with:
+          args: https://raw.githubusercontent.com/MISW-4301-Desarrollo-Apps-en-la-Nube/proyecto-monitor/main/entrega2/entrega2_verify_new_logic.json --output entrega2_verify_new_logic.json
+      - name: Install newman
+        run: npm install -g newman
+      - name: Test entrega 1 still works
+        run: newman run "entrega2_verify_entrega1_still_works.json" --env-var INGRESS_PATH=$INGRESS_PATH --verbose
+      - name: Test entrega 2
+        run: newman run "entrega2_verify_new_logic.json" --env-var INGRESS_PATH=$INGRESS_PATH --verbose

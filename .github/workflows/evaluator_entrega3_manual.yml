@@ -1,0 +1,30 @@
+name: Evaluator_Entrega3_Manual
+on:
+  workflow_dispatch:
+    inputs:
+      my_string:
+        description: 'Email'
+        required: true
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '16.x'
+          registry-url: https://registry.npmjs.org/
+      - name: Set up yq
+        uses: mikefarah/yq@v4.30.8
+      - name: Save port to env variable
+        run: echo "INGRESS_PATH=$(yq '.url' config.yaml)" >> $GITHUB_ENV
+      - name: Download entrega3 postman collection
+        uses: wei/curl@master
+        with:
+          args: https://raw.githubusercontent.com/MISW-4301-Desarrollo-Apps-en-la-Nube/proyecto-monitor/main/entrega3/entrega3_monitor.json --output entrega3.json
+      - name: Install newman
+        run: npm install -g newman
+      - name: Test entrega 3 works
+        run: newman run "entrega3.json" --env-var INGRESS_PATH=$INGRESS_PATH --env-var EMAIL=${{ github.event.inputs.my_string }} --verbose

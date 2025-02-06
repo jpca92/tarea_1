@@ -1,0 +1,26 @@
+name: Test coverage
+on:
+  push:
+    branches: 
+      - main
+jobs:
+  test_calculator:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.10 ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Install pipenv
+        working-directory: ./users
+        run: pip install pipenv
+
+      - name: Install dependencies
+        working-directory: ./users
+        run: pipenv install --dev
+
+      - name: Run unit tests
+        working-directory: ./users
+        run: pipenv run pytest --cov=src -v -s --cov-fail-under=70
